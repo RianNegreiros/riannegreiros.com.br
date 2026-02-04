@@ -27,3 +27,5 @@ public/robots.txt
 *.njsproj
 *.sln
 *.sw?
+
+*.env
