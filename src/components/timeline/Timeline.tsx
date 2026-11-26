@@ -4,7 +4,7 @@ import type { SanityPortfolioItem } from '@/lib/types/sanity'
 import LoadMore from './LoadMore'
 import TimelineItem from './TimelineItem'
 
-const ITEMS_PER_PAGE = 5
+const ITEMS_PER_PAGE = 10
 
 export default function Timeline({
   initialItems = [],
@@ -14,7 +14,7 @@ export default function Timeline({
   const [items, setItems] = useState<SanityPortfolioItem[]>(initialItems)
   const [loading, setLoading] = useState(initialItems.length === 0)
   const [hasMore, setHasMore] = useState<boolean>(true)
-  const [page, setPage] = useState<number>(initialItems.length > 0 ? 1 : 0)
+  const [page, setPage] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const fetchingRef = useRef(false)
 
@@ -39,7 +39,7 @@ export default function Timeline({
   }, [])
 
   useEffect(() => {
-    if (initialItems.length > 0 && page === 1) return
+    if (page === 0 && initialItems.length > 0) return
     fetchData(page)
   }, [page, fetchData])
 
@@ -50,7 +50,11 @@ export default function Timeline({
   }, [loading, hasMore])
 
   if (loading && items.length === 0)
-    return <div className="py-8 text-center text-muted-foreground">Carregando...</div>
+    return (
+      <div className="text-muted-foreground py-8 text-center">
+        Carregando...
+      </div>
+    )
 
   if (error)
     return (
