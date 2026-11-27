@@ -7,6 +7,7 @@ import { ListIcon } from 'lucide-react'
 interface TableOfContentsProps {
   headings: SanityHeading[]
   className?: string
+  title?: string
 }
 
 const INDENT: Record<string, string> = {
@@ -18,6 +19,7 @@ const INDENT: Record<string, string> = {
 export default function TableOfContents({
   headings,
   className,
+  title = 'Tabela de Conteúdos',
 }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>('')
 
@@ -61,11 +63,11 @@ export default function TableOfContents({
         'bg-card/50 rounded-lg border p-6 shadow-sm backdrop-blur-sm',
         className,
       )}
-      aria-label="Tabela de Conteúdos"
+      aria-label={title}
     >
       <h4 className="text-foreground mb-4 flex items-center gap-2 text-sm font-semibold tracking-wide uppercase">
         <ListIcon className="h-4 w-4" />
-        Tabela de Conteúdos
+        {title}
       </h4>
       <ul className="space-y-2 text-sm">
         {filtered.map((heading, index) => {

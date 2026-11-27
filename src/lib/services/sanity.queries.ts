@@ -1,7 +1,14 @@
+const PT = `coalesce(language, 'pt') == 'pt'`
+
+const TRANSLATION = `"translation": select(
+        language == 'en' => translationOf->{ "slug": slug.current },
+        *[_type == 'post' && language == 'en' && translationOf._ref == ^._id][0]{ "slug": slug.current }
+      )`
+
 export const queries = {
   posts: {
     list: (start: number, end: number, searchQuery?: string) => {
-      const baseFilter = `_type == 'post' && defined(firstPublishedDate)`
+      const baseFilter = `_type == 'post' && ${PT} && defined(firstPublishedDate)`
       let query = `*[${baseFilter}`
 
       if (searchQuery) {
@@ -23,9 +30,11 @@ export const queries = {
         params: searchQuery ? { searchQuery: `*${searchQuery}*` } : {},
       }
     },
-    bySlug: `*[_type == 'post' && slug.current == $slug][0]{
+    bySlug: `*[_type == 'post' && coalesce(language, 'pt') == $lang && slug.current == $slug][0]{
       _id,
       title,
+      "language": coalesce(language, 'pt'),
+      ${TRANSLATION},
       firstPublishedDate,
       updatedAt,
       "slug": slug.current,
@@ -55,7 +64,7 @@ export const queries = {
         "level": style
       }
     }`,
-    count: `count(*[_type == 'post' && defined(firstPublishedDate)])`,
+    count: `count(*[_type == 'post' && ${PT} && defined(firstPublishedDate)])`,
   },
   projects: {
     list: `*[_type == 'project'] | order(_createdAt desc) {
@@ -70,7 +79,7 @@ export const queries = {
   },
   portfolio: {
     search: (searchParam: string) => ({
-      query: `*[_type in ['post', 'project'] && defined(title) && (title match $searchQuery || overview match $searchQuery || description match $searchQuery)]{
+      query: `*[_type in ['post', 'project'] && ${PT} && defined(title) && (title match $searchQuery || overview match $searchQuery || description match $searchQuery)]{
         _id,
         _type,
         title,
@@ -82,9 +91,9 @@ export const queries = {
       } | order(coalesce(firstPublishedDate, _createdAt) desc)`,
       params: { searchQuery: `*${searchParam}*` },
     }),
-    count: `count(*[_type in ['post', 'project'] && defined(title)])`,
+    count: `count(*[_type in ['post', 'project'] && ${PT} && defined(title)])`,
     timeline: (start: number, limit: number) => ({
-      query: `*[_type in ["post", "project"] && defined(title) && (_type == "project" || defined(firstPublishedDate))] | order(coalesce(firstPublishedDate, _createdAt) desc) [$start...$end] {
+      query: `*[_type in ["post", "project"] && ${PT} && defined(title) && (_type == "project" || defined(firstPublishedDate))] | order(coalesce(firstPublishedDate, _createdAt) desc) [$start...$end] {
         _id,
         _type,
         title,
@@ -99,7 +108,7 @@ export const queries = {
     }),
   },
   rss: `
-    *[_type == 'post' && defined(slug.current) && defined(firstPublishedDate)]
+    *[_type == 'post' && ${PT} && defined(slug.current) && defined(firstPublishedDate)]
     | order(firstPublishedDate desc) {
       title,
       "slug": slug.current,
@@ -126,6 +135,11 @@ export const queries = {
     *[_type == 'post' && defined(slug.current) && defined(firstPublishedDate)]
     | order(firstPublishedDate desc) {
       "slug": slug.current,
+      "language": coalesce(language, 'pt'),
+      "translationSlug": select(
+        language == 'en' => translationOf->slug.current,
+        *[_type == 'post' && language == 'en' && translationOf._ref == ^._id][0].slug.current
+      ),
       firstPublishedDate,
       updatedAt
     }

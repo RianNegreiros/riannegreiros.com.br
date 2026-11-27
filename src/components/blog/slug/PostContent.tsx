@@ -1,12 +1,14 @@
 import { PortableText } from '@portabletext/react'
 import { urlFor } from '@/lib/services/sanity'
 import type { SanityPost } from '@/lib/types'
-import { slugify } from '@/lib'
+import { slugify, postStrings, type PostLang } from '@/lib'
 import CodeBlock from './CodeBlock'
 import ShareButton from './ShareButton'
 
 type PostContentProps = {
   post: SanityPost
+  lang?: PostLang
+  path: string
 }
 
 function makeHeading(
@@ -131,7 +133,11 @@ const portableTextComponents = {
   },
 }
 
-export default function PostContent({ post }: PostContentProps) {
+export default function PostContent({
+  post,
+  lang = 'pt',
+  path,
+}: PostContentProps) {
   return (
     <>
       <div className="prose prose-lg dark:prose-invert max-w-none">
@@ -144,10 +150,11 @@ export default function PostContent({ post }: PostContentProps) {
       <div className="border-border mt-12 border-t pt-8">
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground text-sm">
-            Gostou deste artigo? Compartilhe!
+            {postStrings[lang].enjoyed}
           </p>
           <ShareButton
-            slug={post.slug}
+            path={path}
+            lang={lang}
             title={post.title}
             description={post.overview}
           />

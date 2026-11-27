@@ -4,6 +4,38 @@ export default {
   title: 'Post',
   fields: [
     {
+      name: 'language',
+      type: 'string',
+      title: 'Language',
+      description:
+        'Posts without a language are treated as Portuguese. Create the English version as a separate post and point it to the original below.',
+      options: {
+        list: [
+          {title: 'Português', value: 'pt'},
+          {title: 'English', value: 'en'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'pt',
+    },
+    {
+      name: 'translationOf',
+      type: 'reference',
+      title: 'Translation of',
+      description: 'The original Portuguese post this English post translates.',
+      to: [{type: 'post'}],
+      options: {
+        filter: "_type == 'post' && coalesce(language, 'pt') == 'pt'",
+      },
+      hidden: ({document}: {document?: {language?: string}}) => document?.language !== 'en',
+      validation: (Rule: any) =>
+        Rule.custom((value: unknown, ctx: {document?: {language?: string}}) =>
+          ctx.document?.language === 'en' && !value
+            ? 'Select the Portuguese original'
+            : true,
+        ),
+    },
+    {
       name: 'title',
       type: 'string',
       title: 'Title',

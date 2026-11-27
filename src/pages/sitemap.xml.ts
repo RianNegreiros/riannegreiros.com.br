@@ -19,29 +19,51 @@ export async function GET(context: APIContext) {
   </url>`,
   ).join('')
 
+  type SitemapPost = {
+    slug: string
+    language: 'pt' | 'en'
+    translationSlug?: string | null
+    firstPublishedDate: string
+    updatedAt?: string
+  }
+
+  const pathFor = (lang: 'pt' | 'en', slug: string) =>
+    lang === 'en' ? `/en/blog/${slug}` : `/blog/${slug}`
+
   const blogUrls = posts
-    .map(
-      (post: {
-        slug: string
-        firstPublishedDate: string
-        updatedAt?: string
-      }) => {
-        const lastmod = post.updatedAt ?? post.firstPublishedDate
-        const ageMs = Date.now() - new Date(lastmod).getTime()
-        const priority = ageMs < 90 * 24 * 60 * 60 * 1000 ? '0.9' : '0.8'
-        return `
+    .map((post: SitemapPost) => {
+      const lastmod = post.updatedAt ?? post.firstPublishedDate
+      const ageMs = Date.now() - new Date(lastmod).getTime()
+      const priority = ageMs < 90 * 24 * 60 * 60 * 1000 ? '0.9' : '0.8'
+
+      let alternates = ''
+      if (post.translationSlug) {
+        const ptPath =
+          post.language === 'pt'
+            ? pathFor('pt', post.slug)
+            : pathFor('pt', post.translationSlug)
+        const enPath =
+          post.language === 'en'
+            ? pathFor('en', post.slug)
+            : pathFor('en', post.translationSlug)
+        alternates = `
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="${baseUrl}${ptPath}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}${enPath}" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${ptPath}" />`
+      }
+
+      return `
   <url>
-    <loc>${baseUrl}/blog/${post.slug}</loc>
+    <loc>${baseUrl}${pathFor(post.language, post.slug)}</loc>
     <lastmod>${new Date(lastmod).toISOString().split('T')[0]}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>${priority}</priority>
+    <priority>${priority}</priority>${alternates}
   </url>`
-      },
-    )
+    })
     .join('')
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${staticUrls}
 ${blogUrls}
 </urlset>`

@@ -12,6 +12,8 @@ export type SanityPost = {
   slug: string
   firstPublishedDate: string
   updatedAt?: string
+  language: 'pt' | 'en'
+  translation?: { slug: string } | null
   image?: {
     asset: {
       _id: string
