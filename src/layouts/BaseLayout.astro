@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import ThemeScript from '@/components/ThemeScript.astro'
 import '@/index.css'
 import { Navbar } from '@/components/Navbar'
+import { LOCALES, type PostLang } from '@/lib/i18n'
 
 interface Props {
   title?: string
@@ -15,6 +16,8 @@ interface Props {
   modifiedTime?: string
   noindex?: boolean
   structuredData?: object
+  lang?: PostLang
+  alternates?: { hreflang: string; href: string }[]
 }
 
 const BASE_URL = Astro.site?.href ?? ''
@@ -36,7 +39,11 @@ const {
   modifiedTime,
   noindex = false,
   structuredData,
+  lang = 'pt',
+  alternates = [],
 } = Astro.props
+
+const locale = LOCALES[lang]
 
 const absoluteImage = image.startsWith('http') ? image : `${BASE_URL}${image}`
 
@@ -46,7 +53,7 @@ const canonicalUrl = url.replace(/\/$/, '') || url
 ---
 
 <!doctype html>
-<html lang="pt-BR">
+<html lang={locale.htmlLang}>
 
   <head>
     <meta charset="UTF-8" />
@@ -61,6 +68,11 @@ const canonicalUrl = url.replace(/\/$/, '') || url
       content={noindex ? 'noindex, follow' : 'index, follow'}
     />
     <link rel="canonical" href={canonicalUrl} />
+    {
+      alternates.map((alt) => (
+        <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+      ))
+    }
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -71,7 +83,7 @@ const canonicalUrl = url.replace(/\/$/, '') || url
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content="Rian Negreiros Dos Santos" />
-    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale" content={locale.ogLocale} />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@riannegreiros" />

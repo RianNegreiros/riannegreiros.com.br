@@ -7,6 +7,7 @@ import { ListIcon, ChevronDownIcon } from 'lucide-react'
 interface MobileTableOfContentsProps {
   headings: SanityHeading[]
   className?: string
+  title?: string
 }
 
 const INDENT: Record<string, string> = {
@@ -18,6 +19,7 @@ const INDENT: Record<string, string> = {
 export default function MobileTableOfContents({
   headings,
   className,
+  title = 'Tabela de Conteúdos',
 }: MobileTableOfContentsProps) {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -43,7 +45,7 @@ export default function MobileTableOfContents({
       >
         <span className="flex items-center gap-2 text-sm font-medium">
           <ListIcon className="h-4 w-4" />
-          Tabela de Conteúdos
+          {title}
         </span>
         <ChevronDownIcon
           className={cn('h-4 w-4 transition-transform duration-200', {

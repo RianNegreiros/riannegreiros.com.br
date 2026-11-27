@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useState, useEffect } from 'react'
+import { postStrings, type PostLang } from '@/lib/i18n'
 import {
   FacebookShareButton,
   LinkedinShareButton,
@@ -28,13 +29,15 @@ import {
 } from 'react-share'
 
 type ShareButtonProps = {
-  slug: string
+  path: string
+  lang?: PostLang
   title: string
   description?: string
 }
 
 export default function ShareButton({
-  slug,
+  path,
+  lang = 'pt',
   title,
   description = '',
 }: ShareButtonProps) {
@@ -43,10 +46,11 @@ export default function ShareButton({
   const [isMobile, setIsMobile] = useState(false)
   const [emailError, setEmailError] = useState(false)
   const [url, setUrl] = useState('')
+  const t = postStrings[lang]
 
   useEffect(() => {
     const baseUrl = window.location.origin
-    setUrl(`${baseUrl}/blog/${slug}`)
+    setUrl(`${baseUrl}${path}`)
   }, [])
 
   useEffect(() => {
@@ -80,15 +84,15 @@ export default function ShareButton({
   }
 
   const shareMessages = {
-    twitter: `Confira este artigo: ${title} - ${url}`,
-    linkedin: `Achei este artigo interessante: ${title} - ${url}`,
-    whatsapp: `Ei, achei que você poderia gostar deste artigo: ${title} - ${url}`,
-    telegram: `Dê uma olhada nisso: ${title} - ${url}`,
-    email: `Olá,\n\nAchei que você poderia achar este artigo interessante:\n\nTítulo: ${title}\nDescrição: ${description}\nLink: ${url}\n\nAtenciosamente,`,
+    twitter: t.shareText.twitter(title, url),
+    linkedin: t.shareText.linkedin(title, url),
+    whatsapp: t.shareText.whatsapp(title, url),
+    telegram: t.shareText.telegram(title, url),
+    email: t.shareText.emailBody(title, description, url),
   }
 
   const handleEmailShare = () => {
-    const mailtoUrl = `mailto:?subject=${encodeURIComponent(`Confira este artigo: ${title}`)}&body=${encodeURIComponent(shareMessages.email)}`
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(t.shareText.emailSubject(title))}&body=${encodeURIComponent(shareMessages.email)}`
     const emailWindow = window.open(mailtoUrl, '_blank')
     if (!emailWindow) {
       setEmailError(true)
@@ -106,14 +110,14 @@ export default function ShareButton({
               variant="outline"
               size="icon"
               className="shadow-xs"
-              aria-label="Compartilhar post"
+              aria-label={t.sharePost}
             >
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
         </TooltipTrigger>
         <TooltipContent className="px-2 py-1 text-xs">
-          Compartilhar
+          {t.share}
         </TooltipContent>
       </Tooltip>
     )
@@ -128,14 +132,14 @@ export default function ShareButton({
               variant="outline"
               size="icon"
               className="shadow-xs"
-              aria-label="Abrir menu de compartilhamento"
+              aria-label={t.openShareMenu}
             >
               <Share2 className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent className="px-2 py-1 text-xs">
-          Compartilhar
+          {t.share}
         </TooltipContent>
       </Tooltip>
 
@@ -156,16 +160,16 @@ export default function ShareButton({
                     <LinkIcon className="h-4 w-4" />
                   )}
                   <span className="sr-only">
-                    {copied ? 'Link copiado' : 'Copiar link'}
+                    {copied ? t.linkCopied : t.copyLink}
                   </span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent className="px-2 py-1 text-xs">
-                {copied ? 'Link copiado!' : 'Copiar link'}
+                {copied ? t.linkCopied : t.copyLink}
               </TooltipContent>
             </Tooltip>
             <span className="text-muted-foreground text-sm">
-              {copied ? 'Link copiado!' : 'Copiar link'}
+              {copied ? t.linkCopied : t.copyLink}
             </span>
           </div>
 
@@ -266,15 +270,14 @@ export default function ShareButton({
                 </div>
               </TooltipTrigger>
               <TooltipContent className="px-2 py-1 text-xs">
-                {emailError ? 'Erro no email' : 'E-mail'}
+                {emailError ? t.emailError : t.email}
               </TooltipContent>
             </Tooltip>
           </div>
 
           {emailError && (
             <div className="mt-2 text-xs text-red-500">
-              Falha ao abrir o cliente de email. Tente novamente ou copie o link
-              manualmente.
+              {t.emailFailed}
             </div>
           )}
         </div>
